@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -15,31 +16,20 @@ import jdbc.Conexion;
 /**
  * Servlet implementation class Svmain
  */
-@WebServlet("/Svmain")
+@WebServlet("./Svmain")
 public class Svmain extends HttpServlet {
-	private static final long serialVersionUID = 1L;
-       
+    private static final long serialVersionUID = 1L;
 
     public Svmain() {
         super();
-
     }
 
-
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
-		response.getWriter().append("Served at: ").append(request.getContextPath());
-	}
-
-
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
-		// Obtener la sentencia SQL desde el formulario
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        // Obtener la sentencia SQL desde el formulario
         String sentenciaSQL = request.getParameter("sentencesql");
-        
-     // Configurar la conexión a la base de datos
+
+        // Configurar la conexión a la base de datos
         Conexion.setURL("jdbc:mysql://localhost:3306/pruebas?user=daw2&password=secreto");
-        
 
         // Obtener la conexión
         Connection con = Conexion.getConexion();
@@ -47,12 +37,43 @@ public class Svmain extends HttpServlet {
             try {
                 // Crear el statement para ejecutar la sentencia SQL
                 Statement stmt = con.createStatement();
-                
-                // Ejecutar la sentencia SQL
-                stmt.executeUpdate(sentenciaSQL);
 
-                // Enviar una respuesta al cliente
-                response.getWriter().println("Sentencia SQL ejecutada exitosamente: " + sentenciaSQL);
+                // Verificamos si es una consulta de tipo SELECT
+                if (sentenciaSQL.trim().toUpperCase().startsWith("SELECT")) {
+                    // Ejecutar la sentencia SQL de consulta
+                    ResultSet rs = stmt.executeQuery(sentenciaSQL);
+
+                    // Procesar el resultado y enviarlo al cliente
+                    StringBuilder resultado = new StringBuilder();
+                    resultado.append("<table border='1'>");
+
+                    // Obtener información sobre las columnas
+                    int columnCount = rs.getMetaData().getColumnCount();
+
+                    // Imprimir encabezados de columna
+                    resultado.append("<tr>");
+                    for (int i = 1; i <= columnCount; i++) {
+                        resultado.append("<th>").append(rs.getMetaData().getColumnName(i)).append("</th>");
+                    }
+                    resultado.append("</tr>");
+
+                    // Imprimir las filas
+                    while (rs.next()) {
+                        resultado.append("<tr>");
+                        for (int i = 1; i <= columnCount; i++) {
+                            resultado.append("<td>").append(rs.getString(i)).append("</td>");
+                        }
+                        resultado.append("</tr>");
+                    }
+                    resultado.append("</table>");
+
+                    // Enviar el resultado al cliente
+                    response.getWriter().println("Resultado de la consulta:<br>" + resultado.toString());
+                } else {
+                    // Para otras consultas como INSERT, UPDATE, DELETE
+                    int filasAfectadas = stmt.executeUpdate(sentenciaSQL);
+                    response.getWriter().println("Sentencia SQL ejecutada exitosamente. Filas afectadas: " + filasAfectadas);
+                }
 
             } catch (SQLException e) {
                 // Manejo de errores de SQL
@@ -63,7 +84,7 @@ public class Svmain extends HttpServlet {
                 Conexion.desconecta();
             }
         } else {
-            response.getWriter().println("No se pudo establecer la conexionn a la base de datos.");
+            response.getWriter().println("No se pudo establecer la conexión a la base de datos.");
         }
     }
 }
