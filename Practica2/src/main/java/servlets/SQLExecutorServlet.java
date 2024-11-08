@@ -1,13 +1,10 @@
 package servlets;
 
-import jdbc.Conexion;
+import jdbc.Alumno;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.List;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -24,52 +21,34 @@ public class SQLExecutorServlet extends HttpServlet {
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();
 
-        // Obtener el parámetro de acción del formulario
         String action = request.getParameter("action");
 
-        try (Connection conn = Conexion.getConexion()) {	
-        	
-        	//
+        try {
             if ("alta".equals(action)) {
-                // Obtener los datos del alumno del formulario
+                // Crear nuevo alumno desde los datos del formulario
                 String id = request.getParameter("id");
                 String curso = request.getParameter("curso");
                 String nombre = request.getParameter("nombre");
 
-                // Crear y ejecutar el INSERT
-                String insertQuery = "INSERT INTO alumnos (id, curso, nombre) VALUES (?, ?, ?)";
-                try (PreparedStatement pstmt = conn.prepareStatement(insertQuery)) {
-                    pstmt.setString(1, id);
-                    pstmt.setString(2, curso);
-                    pstmt.setString(3, nombre);
-                    
-                    int rowsAffected = pstmt.executeUpdate();
-                    if (rowsAffected > 0) {
-                        out.println("<p>Alumno dado de alta correctamente.</p>");
-                    } else {
-                        out.println("<p>No se pudo dar de alta al alumno.</p>");
-                    }
-                }
+                Alumno alumno = new Alumno(id, curso, nombre);
+                alumno.save(); // Guarda el nuevo alumno en la base de datos
+
+                out.println("<p>Alumno dado de alta correctamente.</p>");
             } else {
-                // Obtener y ejecutar la consulta SQL de selección
-                String sqlQuery = request.getParameter("sqlQuery");
-                if (sqlQuery.startsWith("select") || sqlQuery.startsWith("SELECT")) {
-                    try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sqlQuery)) {
-                        out.print("<table>");
-                        out.println("<p>Usa JDBC para recuperar registros de una tabla</p>");
-                        out.println("<tr><td>Id</td><td>Curso</td><td>Nombre</td></tr>");
-                        while (rs.next()) {
-                            out.print("<tr>");
-                            out.print("<td>" + rs.getString("id") + "</td>");
-                            out.print("<td>" + rs.getString("curso") + "</td>");
-                            out.print("<td>" + rs.getString("nombre") + "</td>");
-                            out.print("</tr>");
-                        }
-                        out.print("</table>");
-                    }
-                } else {
-                    out.println("<p>Consulta SQL inválida.</p>");
+                List<Alumno> alumnos = Alumno.load();
+
+                // Imprime los datos en formato tabla
+                out.print("<table>");
+                out.println("<p>Listado de alumnos</p>");
+                out.println("<tr><td>Id</td><td>Curso</td><td>Nombre</td></tr>");
+                for (Alumno alumno : alumnos) {
+                    out.print("<tr>");
+                    out.print("<td>" + alumno.getId() + "</td>");
+                    out.print("<td>" + alumno.getCurso() + "</td>");
+                    out.print("<td>" + alumno.getNombre() + "</td>");
+                    out.print("</tr>");
                 }
+                out.print("</table>");
             }
         } catch (SQLException e) {
             out.println("<p>Error en la operación: " + e.getMessage() + "</p>");
