@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>SQL Executor</title>
+</head>
+<body>
+	<!-- Ctrl + shift + f = format text -->
+
+
+	<h1>Gestion de estudiantes</h1>
+	<form action="./SQLExecutorServlet" method="POST">
+		<label for="sqlQuery">Introduce tu sentencia SQL:</label><br> 
+		<input id="sqlQuery" name="sqlQuery">
+		<button type="submit" value="Ejecutar">Enviar</button>
+	</form>
+	<br>
+	<form action="./SQLExecutorServlet" method="POST">
+		<label for="id">ID alumno:</label>
+        <input id="id" name="id" required>
+		
+		<label for="curso">Curso:</label>
+        <input id="curso" name="curso" required>
+        
+        <label for="nombre">Nombre:</label>
+        <input id="nombre" name="nombre" required>
+        <br><br>
+		<button type="submit" name="action" value="alta">Alta alumno</button>
+        
+        
+	</form>
+
+</body>
+</html>
