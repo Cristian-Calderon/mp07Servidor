@@ -11,39 +11,42 @@ import javax.management.RuntimeErrorException;
 public class Main {
 
 	public static void main(String[] args) {
-	
+
 		Connection myConn = null;
 //		Statement myStamt = null;
-		PreparedStatement myStamt = null;
-//		ResultSet myRest = null;
-		
+//		PreparedStatement sirve para un insert
+//		PreparedStatement myStamt = null;
+		Statement myStamt = null;
+
+		ResultSet myRest = null;
+
 		try {
 //			Aca le pasamos los 3 parametros url, usuario, contrasena
-			myConn = DriverManager.getConnection("jdbc:mysql://localhost:3306/project","daw2", "secreto");
-			
+			myConn = DriverManager.getConnection("jdbc:mysql://localhost:3306/project", "daw2", "secreto");
+
 //			Error en la terminal el proyecto sql no deja tener no null, los campos eran obligatorios.
-		String sql = ("INSERT INTO employees (first_name, pa_surname,email, salary) VALUES (?, ?, ?, ?)");
-		myStamt = myConn.prepareStatement(sql);
-		myStamt.setString(1, "Cristian");
-		myStamt.setString(2, "Calderon");
-		myStamt.setString(3, "ccalderon@gmail.com");
-		myStamt.setString(4, "120000");
-		
-		int rowsAffected = myStamt.executeUpdate();
-		System.out.print(rowsAffected);
-		
-		//myRest = myStamt.executeQuery("SELECT * FROM employees");
-			
-		if(rowsAffected > 0) {
-			System.out.println("Se ha creado un nuevo empleado");
-		}
-		
-		}catch (Exception e) {
+//			String sql = ("INSERT INTO employees (first_name, pa_surname) VALUES (?, ?)");
+//			myStamt = myConn.prepareStatement(sql);
+//			myStamt.setString(1, "Cristian");
+//			myStamt.setString(2, "Calderon");
+
+			myStamt = myConn.createStatement();
+
+
+//			int rowsAffected = myStamt.executeUpdate( "UPDATE employees set email='ccalderon@dundermifflin.com' WHERE first_name = 'Cristian'");
+			int rowsAffected = myStamt.executeUpdate("DELETE FROM employees WHERE first_name = 'Cristian'");
+
+			// myRest = myStamt.executeQuery("SELECT * FROM employees");
+
+			myRest = myStamt.executeQuery("SELECT * FROM employees");
+			while (myRest.next()) {
+				System.out.println(myRest.getString("first_name")+ " " + (myRest.getString("email")));
+			}
+
+		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("No funciona");
 		}
-		
-		
 
 	}
 
