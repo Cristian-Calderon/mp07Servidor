@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Test JSTL objetos implicitos</title>
+</head>
+<body>
+<!-- Pregunta de examen son ambas paginas que usan lenguaje de marcas jsp y html?  -->
+   <h2>Formulario de prueba objetos implicitos JSTL</h2>
+   <form action="ejemplos.jsp" method="post">
+     <label for="nombre">Introduzca su nombre</label>
+     <input name="nomUsuario" /> <br>
+     <label for="dni">Introduzca su DNI</label> <input name="dni" />
+     <!-- Valor multiple -->
+     <select multiple="multiple" name="opciones">
+		<option value="valor1">Opcion 1</option>
+		<option value="valor2">Opcion 2</option>
+		<option value="valor3">Opcion 3</option>
+     </select>
+     
+     <input type="submit" value="Enviar" />
+   </form>
+</body>
+</html>	

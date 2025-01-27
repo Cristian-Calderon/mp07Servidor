@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Test JSTL-SQL</title>
+</head>
+<body>
+	<form action="proceso-2.jsp?operacion=consulta" method="post">
+		Introducir la consulta de seleccion SQL:
+		<br /> 
+		<input name="txtQuery" size="70" value="SELECT id, curso, nombre FROM alumnos" /><br /> <input
+			type="submit" value="Enviar" />
+	</form>
+	<form action="proceso-2.jsp?operacion=actualizacion" method="post">
+		Introducir la consulta de actualizacion SQL:
+		<br /> 
+		<input name="txtUpdate" size="70" value="INSERT INTO alumnos (id,curso,nombre) VALUES (1000,'Cobol','Gabriela')" /><br />
+		<input type="submit" value="Enviar" />
+	</form>
+</body>
+</html>
