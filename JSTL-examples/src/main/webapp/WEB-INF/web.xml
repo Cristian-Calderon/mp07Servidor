@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="https://jakarta.ee/xml/ns/jakartaee"<welcome-file-list>
+		<welcome-file>index.html</welcome-file>
+	</welcome-file-list>
+	xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+	id="WebApp_ID" version="6.0">
+	<display-name>JSTL-examples</display-name>
+	
+
+	<context-param>
+		<param-name>jakarta.servlet.jsp.jstl.fmt.fallbackLocale</param-name>
+		<param-value>en_USA</param-value>
+	</context-param>
+
+	<context-param>
+		<param-name>jakarta.servlet.jsp.jstl.fmt.locale</param-name>
+		<param-value>es_ES</param-value>
+	</context-param>
+
+	<context-param>
+		<param-name>jakarta.servlet.jsp.jstl.fmt.localizationContext</param-name>
+		<param-value>  			
+ 	   ApplicationResources
+    </param-value>
+	</context-param>
+	
+	<error-page>
+		<error-code>500</error-code>
+		<location>/error500.jsp</location>
+</error-page>
+	
+	
+	<error-page>
+		<exception-type>java.lang.Throwable</exception-type>
+		<location>/gest-err.jsp</location>
+	</error-page>
+
+<!-- context-param es un parametro para toda la aplicacion -->
+<context-param>
+		<param-name>jakarta.servlet.jsp.jstl.sql.dataSource</param-name>
+		<param-value>
+			jdbc:mysql://localhost:3306/dbalumnos,com.mysql.cj.jdbc.Driver,daw2,secreto
+		</param-value>
+	</context-param>
+</web-app>
