@@ -1,4 +1,3 @@
-<!-- Se crea jsp como JSTL para la consulta -->
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
@@ -15,7 +14,7 @@
     </c:if>
 
     <!-- Mostrar resultados si existen -->
-    <c:if test="${not empty listaAlumnos}">
+    <c:if test="${not empty alumnos}">
         <table border="1">
             <thead>
                 <tr>
@@ -26,7 +25,7 @@
             </thead>
             <tbody>
                 <!-- Recorrer la lista de alumnos -->
-                <c:forEach var="alumno" items="${listaAlumnos}">
+                <c:forEach var="alumno" items="${alumnos}">
                     <tr>
                         <td>${alumno.id}</td>
                         <td>${alumno.nombre}</td>
@@ -36,5 +35,8 @@
             </tbody>
         </table>
     </c:if>
+
+    <br>
+    <a href="index.html">Volver al Inicio</a>
 </body>
 </html>

@@ -4,44 +4,58 @@
 <meta charset="UTF-8">
 <title>Index.html</title>
 <link rel="stylesheet" type="text/css" href="css/index.css">
-
 </head>
 <body>
-<h1>Gestion de estudiantes</h1>
+<h1>Gestión de estudiantes</h1>
+
+<a href="Controlador?operacion=info">Ver Información de Sesión</a>
+<a href="javascript:desconectar()">Desconectar</a>
+
+<script type="text/javascript">
+    function desconectar() {
+        var confirmar = confirm("¿Estás seguro de que quieres cerrar sesión?");
+        if (confirmar) {
+            window.location = "Controlador?operacion=desconectar";
+        }
+    }
+</script>
+
 <h2>Consulta de estudiantes</h2>
-	<form action="Servlet" method="GET">
-		<input type="text" id="sentencia" name="sentencia" placeholder="SELECT * FROM alumnos" required>
-		<input type="submit" value="Ejecutar">
-		<!-- Se añade checkboox para seleccionar si se usa la JSTL o no -->
-		
-		<h2>Opciones</h2>
-		<label>Técnica JSTL en resultados consulta:</label>
-		<input type="radio"  id="jstl-si" value="true" name="jstl" checked>
-		<label for="jstl-si">Sí</label>
-		<input type="radio" id="jstl-no" value="false" name="jstl">
-		<label for="jstl-no"">No</label>
-		<!-- FIN -->
-	</form> 
+<form action="Controlador" method="post">
+    <input type="hidden" name="operacion" value="consulta">
+    <input type="text" id="sentencia" name="sentencia" placeholder="SELECT * FROM alumnos" required>
+    <input type="submit" value="Ejecutar">
+    
+    <h2>Opciones</h2>
+    <label>Técnica JSTL en resultados consulta:</label>
+    <input type="radio" id="jstl-si" value="true" name="jstl" checked>
+    <label for="jstl-si">Sí</label>
+    <input type="radio" id="jstl-no" value="false" name="jstl">
+    <label for="jstl-no">No</label>
+</form>
+
 	<br>
-	
-	
+
 <h2>Alta de Alumno</h2>
-    <form action="Servlet" method="POST">
-        <label for="id">ID Alumno:</label><br>
-        <input type="number" id="id" name="id" placeholder="1" min="1" required><br><br>
+    <form action="Controlador" method="POST">  <!-- Se cambia de Servlet a Controlador -->
+        <input type="hidden" name="operacion" value="alta"> <!-- Se especifica la operación -->
 
-        <label for="nombre">Nombre:</label><br>
-        <input type="text" id="nombre" name="nombre" placeholder="Nombre Apellido"><br><br>
+        <label for="txtID">ID Alumno:</label><br>
+        <input type="number" id="txtID" name="txtID" placeholder="1" min="1" required><br><br>
 
-        <label for="curso">Curso:</label><br>
-        <input type="text" id="curso" name="curso" placeholder="DAW" required><br><br>
+        <label for="txtNombre">Nombre:</label><br>
+        <input type="text" id="txtNombre" name="txtNombre" placeholder="Nombre Apellido"><br><br>
+
+        <label for="txtCurso">Curso:</label><br>
+        <input type="text" id="txtCurso" name="txtCurso" placeholder="DAW" required><br><br>
 
         <button type="submit">Alta Alumno</button>
     </form>
 <br>
+
 <h2>Informes</h2>
 	<form action="Report" method="POST">
-		<input type="radio"  value="application/pdf" name="optInformes" checked>
+		<input type="radio" value="application/pdf" name="optInformes" checked>
 		<label for="pdf">PDF</label>
 		<input type="radio" value="application/vnd.ms-excel" name="optInformes">
 		<label for="excel">Excel</label>
@@ -49,8 +63,7 @@
 		<label for="word">Word</label>
 		<input type="radio" value="text/html" name="optInformes">
 		<label for="html">HTML</label>
-		<br>
-		<br>
+		<br><br>
 		<input type="submit" value="Ver informe">
 	</form>
 </body>
