@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import logicaNegocio.Alumno;
+import logicaNegocio.AlumnoDAO;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -19,7 +20,7 @@ public class Servlet extends HttpServlet {
     private static final String PG_DESCONEXION = "/desconectado.jsp";
     private static final String PG_VALIDARSE = "/acceso.jsp";
     private static final String PG_ERROR_VALIDACION = "/errorLogin.jsp";
-    private static final String PG_REINSERT_ALTA = "/Controlador?operacion=alta";
+    private static final String PG_ERROR = "/error.jsp";
     private static final String PG_CONSULTA = "/consulta.jsp";
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
@@ -34,7 +35,7 @@ public class Servlet extends HttpServlet {
 
     private void processRequest(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-
+        
         String operacion = request.getParameter("operacion");
         HttpSession sesion = request.getSession(true);
         incrementarContadorSesion(sesion);
@@ -50,24 +51,32 @@ public class Servlet extends HttpServlet {
                 siguientePag = PG_DESCONEXION;
 
             } else if ("alta".equals(operacion)) {
-                String id = request.getParameter("txtID");
+                // Capturar datos del formulario
+                String idStr = request.getParameter("txtID");
                 String curso = request.getParameter("txtCurso");
                 String nombre = request.getParameter("txtNombre");
 
-                if (sesion.getAttribute("usuario") != null) {
-                    if (id != null && curso != null && nombre != null) {
-                        Alumno.saved(Integer.parseInt(id), nombre, curso);
-                    } else {
-                        request.setAttribute("error", "Faltan datos del alumno.");
-                        siguientePag = "/error.jsp";
+                if (idStr != null && curso != null && nombre != null) {
+                    try {
+                        int id = Integer.parseInt(idStr); // Convertir ID a entero
+                        
+                        if (sesion.getAttribute("usuario") != null) { 
+                            AlumnoDAO dao = new AlumnoDAO();
+                            Alumno alumno = new Alumno(id, nombre, curso);
+                            dao.guardarAlumno(alumno);
+                        } else { 
+                            sesion.setAttribute("sesID", id);
+                            sesion.setAttribute("sesCurso", curso);
+                            sesion.setAttribute("sesNombre", nombre);
+                            siguientePag = PG_VALIDARSE; 
+                        }
+                    } catch (NumberFormatException e) {
+                        request.setAttribute("error", "El ID debe ser un número válido.");
+                        siguientePag = PG_ERROR;
                     }
                 } else {
-                    if (id != null && curso != null && nombre != null) {
-                        sesion.setAttribute("sesAlumno", id);
-                        sesion.setAttribute("sesCurso", curso);
-                        sesion.setAttribute("sesNombre", nombre);
-                    }
-                    siguientePag = PG_VALIDARSE; 
+                    request.setAttribute("error", "Faltan datos del alumno.");
+                    siguientePag = PG_ERROR;
                 }
 
             } else if ("validar".equals(operacion)) {
@@ -79,15 +88,20 @@ public class Servlet extends HttpServlet {
                 if (user == null) {
                     siguientePag = PG_ERROR_VALIDACION;
                 } else {
-                    sesion.setAttribute("usuario", user); 
+                    sesion.setAttribute("usuario", user);
 
-                    String id = (String) sesion.getAttribute("sesAlumno");
+                    // Recuperar datos temporales del alumno si existen
+                    Integer id = (Integer) sesion.getAttribute("sesID");
                     String curso = (String) sesion.getAttribute("sesCurso");
                     String nombre = (String) sesion.getAttribute("sesNombre");
 
                     if (id != null && curso != null && nombre != null) {
-                        Alumno.saved(Integer.parseInt(id), nombre, curso);
-                        sesion.removeAttribute("sesAlumno");
+                        AlumnoDAO dao = new AlumnoDAO();
+                        Alumno alumno = new Alumno(id, nombre, curso);
+                        dao.guardarAlumno(alumno);
+
+                        // Eliminar atributos temporales
+                        sesion.removeAttribute("sesID");
                         sesion.removeAttribute("sesCurso");
                         sesion.removeAttribute("sesNombre");
                     }
@@ -96,47 +110,41 @@ public class Servlet extends HttpServlet {
                 }
 
             } else if ("consulta".equals(operacion)) {
-                String sentencia = request.getParameter("sentencia");
-                String usarJSTL = request.getParameter("jstl"); 
+                AlumnoDAO dao = new AlumnoDAO();
+                List<Alumno> alumnos = dao.listarAlumnos();
+                request.setAttribute("alumnos", alumnos);
 
-                if (sentencia != null && !sentencia.trim().isEmpty()) {
-                    List<Alumno> alumnos = Alumno.load(sentencia);
-                    request.setAttribute("alumnos", alumnos);
-
-                    if ("true".equals(usarJSTL)) {
-                        siguientePag = "/consultaJSTL.jsp"; 
-                        request.getRequestDispatcher(siguientePag).forward(request, response);
-                        return;
-                    } else {
-                        response.setContentType("text/html;charset=UTF-8");
-                        PrintWriter out = response.getWriter();
-
-                        out.println("<html><head><title>Consulta de Alumnos</title></head><body>");
-                        out.println("<h2>Resultados de la consulta:</h2>");
-                        out.println("<table border='1'><tr><th>ID</th><th>Nombre</th><th>Curso</th></tr>");
-
-                        for (Alumno alumno : alumnos) {
-                            out.println("<tr><td>" + alumno.getId() + "</td>");
-                            out.println("<td>" + alumno.getNombre() + "</td>");
-                            out.println("<td>" + alumno.getCurso() + "</td></tr>");
-                        }
-
-                        out.println("</table><br><a href='index.html'>Volver al Inicio</a>");
-                        out.println("</body></html>");
-
-                        out.close();
-                        return;
-                    }
+                String usarJSTL = request.getParameter("jstl");
+                if ("true".equals(usarJSTL)) {
+                    siguientePag = "/consultaJSTL.jsp"; 
+                    request.getRequestDispatcher(siguientePag).forward(request, response);
+                    return;
                 } else {
-                    request.setAttribute("error", "La consulta no puede estar vacía.");
-                    siguientePag = "/error.jsp";
+                    response.setContentType("text/html;charset=UTF-8");
+                    PrintWriter out = response.getWriter();
+
+                    out.println("<html><head><title>Consulta de Alumnos</title></head><body>");
+                    out.println("<h2>Resultados de la consulta:</h2>");
+                    out.println("<table border='1'><tr><th>ID</th><th>Nombre</th><th>Curso</th></tr>");
+
+                    for (Alumno alumno : alumnos) {
+                        out.println("<tr><td>" + alumno.getId() + "</td>");
+                        out.println("<td>" + alumno.getNombre() + "</td>");
+                        out.println("<td>" + alumno.getCurso() + "</td></tr>");
+                    }
+
+                    out.println("</table><br><a href='index.html'>Volver al Inicio</a>");
+                    out.println("</body></html>");
+
+                    out.close();
+                    return;
                 }
             }
 
             request.getRequestDispatcher(siguientePag).forward(request, response);
 
-        } catch (ClassNotFoundException e) {
-            throw new ServletException("Error de conexión con la base de datos", e);
+        } catch (Exception e) {
+            throw new ServletException("Error en el procesamiento de la solicitud", e);
         }
     }
 
